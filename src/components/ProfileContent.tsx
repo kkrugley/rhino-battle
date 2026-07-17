@@ -1,6 +1,7 @@
 import { memo, useCallback, useRef, useState } from 'react'
 
 const VGY_KEY = import.meta.env.VITE_VGY_USERKEY || ''
+const MAX_FILE_SIZE = 20 * 1024 * 1024
 const API = '/api'
 
 interface Props {
@@ -91,6 +92,7 @@ const ProfileContent = memo(function ProfileContent({ username, avatarUrl, token
   const handleAvatarChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !token) return
+    if (file.size > MAX_FILE_SIZE) { setError(`File too large (max 20 MB)`); setUploading(false); return }
     setUploading(true)
     setError('')
 

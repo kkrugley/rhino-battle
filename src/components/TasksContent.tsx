@@ -4,6 +4,7 @@ import { upload } from '@vercel/blob/client'
 
 const API = '/api'
 const VGY_KEY = import.meta.env.VITE_VGY_USERKEY || ''
+const MAX_FILE_SIZE = 20 * 1024 * 1024
 
 function isModelUrl(url: string) {
   const ext = url.split('.').pop()?.toLowerCase() || ''
@@ -174,6 +175,7 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
   const handleMainImage = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+    if (file.size > MAX_FILE_SIZE) { setError('File too large (max 20 MB)'); return }
     setMainUploading(true)
     setError('')
     const isModel = file.name.endsWith('.glb') || file.name.endsWith('.gltf')
@@ -188,6 +190,8 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
     const files = Array.from(e.target.files || [])
     const slots = MAX_EXTRA - extraImages.length
     if (slots <= 0) { setError('Max 5 additional images'); return }
+    const tooBig = files.find(f => f.size > MAX_FILE_SIZE)
+    if (tooBig) { setError('File too large (max 20 MB)'); return }
     const toUpload = files.slice(0, slots)
     const urls: string[] = []
     for (const f of toUpload) {

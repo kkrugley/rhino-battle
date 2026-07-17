@@ -3,6 +3,7 @@ import type { ApiModel, ApiTask } from '../types'
 import { upload } from '@vercel/blob/client'
 
 const API = '/api'
+const MAX_FILE_SIZE = 20 * 1024 * 1024 // 20 MB
 
 interface Props {
   models: ApiModel[]
@@ -116,6 +117,7 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
 
   const doUpload = useCallback(async (file: File) => {
     if (!token || uploading) return
+    if (file.size > MAX_FILE_SIZE) { setUploadError(`File too large (max 20 MB)`); return }
     setUploading(true)
     setUploadError('')
     try {
