@@ -1,6 +1,6 @@
 INSERT INTO users (login, password_hash, username, avatar_url) VALUES
-  ('learner1', 'sha256$8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 'Leo', NULL),
-  ('learner2', 'sha256$5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8', 'Nina', NULL)
+  ('learner1', 'sha256$ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f', 'Leo', NULL),
+  ('learner2', 'sha256$c6ba91b90d922e159893f46c387e5dc1b3dc5c101a5a4522f03b987177a24a91', 'Nina', NULL)
 ON CONFLICT (login) DO NOTHING;
 
 INSERT INTO tasks (title, difficulty, description, main_image_url) VALUES
