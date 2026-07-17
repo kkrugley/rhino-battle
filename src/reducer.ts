@@ -41,6 +41,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, models: { ...state.models, [key]: [action.model, ...existing] } }
     }
 
+    case 'SET_AVATAR':
+      return state.user ? { ...state, user: { ...state.user, avatarUrl: action.avatarUrl } } : state
+
     case 'SET_DATA':
       return {
         ...state,

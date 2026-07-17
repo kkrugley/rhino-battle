@@ -71,6 +71,10 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
     dispatch({ type: 'ADD_MODEL', userId: state.user.id, model })
   }, [state.user, dispatch])
 
+  const onAvatarUpdate = useCallback((avatarUrl: string) => {
+    dispatch({ type: 'SET_AVATAR', avatarUrl })
+  }, [dispatch])
+
   const w = (id: string) => state.windows[id]
 
   return (
@@ -106,7 +110,9 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
             content = <ProfileContent
               username={state.user?.username || 'Admin'}
               avatarUrl={state.user?.avatarUrl}
+              token={state.token}
               onLogout={logout}
+              onAvatarUpdate={onAvatarUpdate}
             />
           }
 
