@@ -73,8 +73,9 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
           const geom = await new Promise<any>((resolve, reject) =>
             new STLLoader().load(src, resolve, undefined, reject)
           )
+          geom.computeVertexNormals()
           const mat = new THREE.MeshStandardMaterial({
-            color: 0x808080, metalness: 0.3, roughness: 0.4,
+            color: 0x808080, metalness: 0.3, roughness: 0.4, side: THREE.DoubleSide,
           })
           object = new THREE.Mesh(geom, mat)
         } else if (ext === 'obj') {
@@ -112,7 +113,8 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
           requestAnimationFrame(animate)
         }
         animate()
-      } catch {
+      } catch (e) {
+        console.error('ModelViewer error:', src, e)
         setFailed(true)
       }
     }
