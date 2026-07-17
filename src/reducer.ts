@@ -29,6 +29,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'ADD_TASK':
       return { ...state, tasks: [action.task, ...state.tasks] }
 
+    case 'DELETE_TASK':
+      return { ...state, tasks: state.tasks.filter(t => t.id !== action.taskId) }
+
+    case 'REORDER_TASKS':
+      return { ...state, tasks: action.tasks }
+
     case 'SET_DATA':
       return {
         ...state,

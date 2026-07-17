@@ -91,7 +91,7 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
             const models = state.models[id] || []
             content = <LearnerContent models={models} />
           } else if (id === 'tasks') {
-            content = <TasksContent tasks={state.tasks} token={state.token} onAddTask={(t) => dispatch({ type: 'ADD_TASK', task: t })} />
+            content = <TasksContent tasks={state.tasks} token={state.token} onAddTask={(t) => dispatch({ type: 'ADD_TASK', task: t })} onDeleteTask={(id) => dispatch({ type: 'DELETE_TASK', taskId: id })} onReorderTasks={(tasks) => dispatch({ type: 'REORDER_TASKS', tasks })} />
           } else if (id === 'score') {
             content = <ScoreContent user1={state.score.user1} user2={state.score.user2} />
           } else if (id === 'leaderboard') {

@@ -13,7 +13,7 @@ export interface AuthResponse {
 export interface ApiTask {
   id: number
   title: string
-  difficulty: 'Hard' | 'Medium'
+  difficulty: 'Easy' | 'Medium' | 'Hard'
   description: string
   deadline: string | null
   main_image_url: string | null
@@ -66,6 +66,8 @@ export type AppAction =
   | { type: 'LOGIN'; user: User; token: string }
   | { type: 'LOGOUT' }
   | { type: 'ADD_TASK'; task: ApiTask }
+  | { type: 'DELETE_TASK'; taskId: number }
+  | { type: 'REORDER_TASKS'; tasks: ApiTask[] }
   | { type: 'SET_DATA'; tasks: ApiTask[]; models: Record<string, ApiModel[]>; score: { user1: number; user2: number } }
   | { type: 'FOCUS_WINDOW'; id: string }
   | { type: 'MINIMIZE'; id: string }

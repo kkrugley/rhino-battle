@@ -4,18 +4,40 @@ import type { ApiTask } from '../types'
 const API = '/api'
 const VGY_KEY = import.meta.env.VITE_VGY_USERKEY || ''
 
+const DIFF_COLORS: Record<string, string> = {
+  Easy: '#008000',
+  Medium: '#808000',
+  Hard: '#000080',
+}
+
 interface Props {
   tasks: ApiTask[]
   token: string | null
   onAddTask: (task: ApiTask) => void
+  onDeleteTask: (taskId: number) => void
+  onReorderTasks: (tasks: ApiTask[]) => void
 }
 
-const TaskItem = memo(function TaskItem({ task }: { task: ApiTask }) {
+const TaskItem = memo(function TaskItem({
+  task, editMode, onMoveUp, onMoveDown, onDelete
+}: {
+  task: ApiTask
+  editMode: boolean
+  onMoveUp: () => void
+  onMoveDown: () => void
+  onDelete: () => void
+}) {
   const [open, setOpen] = useState(false)
 
   return (
     <>
-      <div className="win-task-item">
+      <div className="win-task-item" style={editMode ? { alignItems: 'center' } : undefined}>
+        {editMode && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0 }}>
+            <button className="win-btn-sm" onClick={onMoveUp} style={{ width: 18, height: 14, fontSize: 7, lineHeight: '6px' }}>&#9650;</button>
+            <button className="win-btn-sm" onClick={onMoveDown} style={{ width: 18, height: 14, fontSize: 7, lineHeight: '6px' }}>&#9660;</button>
+          </div>
+        )}
         {task.main_image_url ? (
           task.main_image_url.endsWith('.glb') ? (
             <model-viewer
@@ -33,17 +55,24 @@ const TaskItem = memo(function TaskItem({ task }: { task: ApiTask }) {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
             <div style={{ fontWeight: 700, fontSize: 11, color: '#000' }}>{task.title}</div>
-            <div style={{ fontSize: 11, fontWeight: 700, marginTop: 4, color: task.difficulty === 'Hard' ? '#000080' : '#008000' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, marginTop: 4, color: DIFF_COLORS[task.difficulty] || '#000' }}>
               Difficulty: {task.difficulty}
             </div>
             {task.description && (
               <div style={{ fontSize: 10, color: '#595a5b', marginTop: 2, lineHeight: '14px' }}>{task.description}</div>
             )}
           </div>
-          <button className="win-button" onClick={() => setOpen(true)} style={{ marginTop: 8, alignSelf: 'flex-start', height: 24, padding: '0 8px' }}>
-            Open Task
-          </button>
+          {!editMode && (
+            <button className="win-button" onClick={() => setOpen(true)} style={{ marginTop: 8, alignSelf: 'flex-start', height: 24, padding: '0 8px' }}>
+              Open Task
+            </button>
+          )}
         </div>
+        {editMode && (
+          <button className="win-button" onClick={onDelete} style={{ flexShrink: 0, height: 22, padding: '0 6px', fontSize: 10, color: '#800000' }}>
+            Delete
+          </button>
+        )}
       </div>
       {open && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setOpen(false)}>
@@ -173,6 +202,7 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
             <label style={{ width: 80, flexShrink: 0 }}>Difficulty:</label>
             <select ref={diffRef} className="win-input" style={{ flex: 1, height: 22 }}>
               <option value="">Select...</option>
+              <option value="Easy">Easy</option>
               <option value="Medium">Medium</option>
               <option value="Hard">Hard</option>
             </select>
@@ -235,17 +265,40 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
   )
 }
 
-const TasksContent = memo(function TasksContent({ tasks, token, onAddTask }: Props) {
+const TasksContent = memo(function TasksContent({ tasks, token, onAddTask, onDeleteTask, onReorderTasks }: Props) {
   const [menu, setMenu] = useState<string | null>(null)
   const [showAdd, setShowAdd] = useState(false)
+  const [editMode, setEditMode] = useState(false)
+  const [deleting, setDeleting] = useState<number | null>(null)
 
   const toggle = useCallback((name: string) => setMenu(m => m === name ? null : name), [])
 
   const handleMenuAction = useCallback((action: string) => {
     setMenu(null)
     if (action === 'Add New') setShowAdd(true)
+    else if (action === 'Edit List') setEditMode(e => !e)
     else alert(action + ' - coming soon!')
   }, [])
+
+  const moveItem = useCallback((index: number, dir: -1 | 1) => {
+    const next = [...tasks]
+    const target = index + dir
+    if (target < 0 || target >= next.length) return
+    ;[next[index], next[target]] = [next[target], next[index]]
+    onReorderTasks(next)
+  }, [tasks, onReorderTasks])
+
+  const handleDelete = useCallback(async (taskId: number) => {
+    setDeleting(taskId)
+    try {
+      await fetch(API + '/tasks/' + taskId, {
+        method: 'DELETE',
+        headers: { Authorization: 'Bearer ' + token },
+      })
+    } catch { /* ignore server error, remove locally anyway */ }
+    onDeleteTask(taskId)
+    setDeleting(null)
+  }, [token, onDeleteTask])
 
   const items = menu === 'file' ? ['Add New', 'Open', 'Save', 'Exit'] : ['Edit List', 'Select All', 'Clear']
 
@@ -264,10 +317,21 @@ const TasksContent = memo(function TasksContent({ tasks, token, onAddTask }: Pro
           </div>
         )}
       </div>
+      {editMode && (
+        <div style={{ fontSize: 10, padding: '4px 8px', background: '#ffffcc', borderBottom: '1px solid #808080', color: '#000' }}>
+          Edit mode — drag to reorder with ▲▼ buttons, click Delete to remove
+        </div>
+      )}
       <div className="win-content" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         {tasks.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 32, color: '#808080', fontSize: 11 }}>No tasks yet</div>
-        ) : tasks.map(t => <TaskItem key={t.id} task={t} />)}
+        ) : tasks.map((t, i) => (
+          <TaskItem key={t.id} task={t} editMode={editMode}
+            onMoveUp={() => moveItem(i, -1)}
+            onMoveDown={() => moveItem(i, 1)}
+            onDelete={() => handleDelete(t.id)}
+          />
+        ))}
       </div>
       {showAdd && (
         <AddNewModal
