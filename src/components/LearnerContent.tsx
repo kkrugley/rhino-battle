@@ -130,15 +130,13 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
     setUploadError('')
     try {
       const ext = file.name.split('.').pop() || 'glb'
-      const pathname = `models/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
-      const contentType = ext === 'glb' ? 'model/gltf-binary' : 'application/octet-stream'
+      const pathname = `models/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.glb`
       const blob = await upload(pathname, file, {
         access: 'public',
         handleUploadUrl: API + '/models/upload',
         headers: { Authorization: 'Bearer ' + token },
-        contentType,
       })
-      const filenameFromUrl = blob.pathname.split('/').pop() || file.name
+      const filenameFromUrl = file.name  // preserve original name
       setPendingModel({ fileUrl: blob.url, filename: filenameFromUrl })
     } catch (e) {
       console.error('Upload failed', e)
