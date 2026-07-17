@@ -47,11 +47,21 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       }
     }
 
-    case 'SET_AVATAR':
-      return state.user ? { ...state, user: { ...state.user, avatarUrl: action.avatarUrl } } : state
+    case 'SET_AVATAR': {
+      if (!state.user) return state
+      const updated = { ...state.user, avatarUrl: action.avatarUrl }
+      localStorage.setItem('user', JSON.stringify(updated))
+      return { ...state, user: updated }
+    }
 
-    case 'SET_USERS':
-      return { ...state, users: action.users }
+    case 'SET_USERS': {
+      let user = state.user
+      if (user) {
+        const matched = action.users.find(u => u.id === user!.id)
+        if (matched) user = { ...user, avatarUrl: matched.avatar_url ?? null }
+      }
+      return { ...state, users: action.users, user }
+    }
 
     case 'SET_DATA':
       return {
