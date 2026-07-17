@@ -1,16 +1,24 @@
 import { memo } from 'react'
 
 interface Props {
-  seconds: number
+  user1: number
+  user2: number
 }
 
-function fmt(s: number) {
-  return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
-}
-
-const ScoreContent = memo(function ScoreContent({ seconds }: Props) {
+const ScoreContent = memo(function ScoreContent({ user1, user2 }: Props) {
   return (
-    <div className="win-timer">{fmt(seconds)}</div>
+    <div style={{
+      background: '#000', color: '#22c55e',
+      padding: 8, textAlign: 'center',
+      fontFamily: "'Arimo', monospace",
+      borderWidth: 2, borderStyle: 'solid',
+      borderColor: '#808080 #ffffff #ffffff #808080',
+    }}>
+      <div style={{ fontSize: 10, letterSpacing: 2, marginBottom: 4 }}>MODELS</div>
+      <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 4 }}>
+        {user1} : {user2}
+      </div>
+    </div>
   )
 })
 

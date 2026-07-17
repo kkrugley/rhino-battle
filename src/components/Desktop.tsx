@@ -1,6 +1,5 @@
-import { memo, useCallback } from 'react'
-import type { AppState, AppAction } from '../types'
-import { useTimer } from '../hooks/useTimer'
+import { memo, useCallback, useEffect, useRef } from 'react'
+import type { AppState, AppAction, ApiTask, ApiModel } from '../types'
 import LoginModal from './LoginModal'
 import Taskbar from './Taskbar'
 import Window from './Window'
@@ -10,13 +9,50 @@ import ScoreContent from './ScoreContent'
 import LeaderboardContent from './LeaderboardContent'
 import ProfileContent from './ProfileContent'
 
+const API = '/api'
+
 interface Props {
   state: AppState
   dispatch: React.Dispatch<AppAction>
 }
 
 const Desktop = memo(function Desktop({ state, dispatch }: Props) {
-  useTimer(state.authenticated, useCallback(() => dispatch({ type: 'TICK' }), [dispatch]))
+  const loadingRef = useRef(false)
+
+  const loadData = useCallback(async () => {
+    if (!state.authenticated || !state.token || loadingRef.current) return
+    loadingRef.current = true
+
+    try {
+      const headers = { Authorization: 'Bearer ' + state.token }
+
+      const [tasksRes, m1, m2, scoreRes] = await Promise.all([
+        fetch(API + '/tasks', { headers }),
+        fetch(API + '/models/1', { headers }),
+        fetch(API + '/models/2', { headers }),
+        fetch(API + '/score', { headers }),
+      ])
+
+      const [tasks, models1, models2, score]: [ApiTask[], ApiModel[], ApiModel[], { user1: number; user2: number }] = await Promise.all([
+        tasksRes.json(), m1.json(), m2.json(), scoreRes.json(),
+      ])
+
+      dispatch({
+        type: 'SET_DATA',
+        tasks,
+        models: { learner1: models1, learner2: models2 },
+        score,
+      })
+    } catch (e) {
+      console.error('Failed to load data', e)
+    } finally {
+      loadingRef.current = false
+    }
+  }, [state.authenticated, state.token, dispatch])
+
+  useEffect(() => {
+    if (state.authenticated && !state.dataLoaded) loadData()
+  }, [state.authenticated, state.dataLoaded, loadData])
 
   const focus = useCallback((id: string) => dispatch({ type: 'FOCUS_WINDOW', id }), [dispatch])
   const min = useCallback((id: string) => dispatch({ type: 'MINIMIZE', id }), [dispatch])
@@ -24,8 +60,11 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
   const close = useCallback((id: string) => dispatch({ type: 'CLOSE', id }), [dispatch])
   const move = useCallback((id: string, x: number, y: number) => dispatch({ type: 'MOVE', id, x, y }), [dispatch])
   const restore = useCallback((id: string) => dispatch({ type: 'RESTORE', id }), [dispatch])
-  const login = useCallback(() => dispatch({ type: 'LOGIN' }), [dispatch])
-  const logout = useCallback(() => dispatch({ type: 'LOGOUT' }), [dispatch])
+  const logout = useCallback(() => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    dispatch({ type: 'LOGOUT' })
+  }, [dispatch])
 
   const w = (id: string) => state.windows[id]
 
@@ -49,18 +88,20 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
 
           let content = null
           if (id === 'learner1' || id === 'learner2') {
-            const models = id === 'learner1'
-              ? [state.learnerModels.learner1, state.learnerModels.learner2]
-              : [state.learnerModels.learner3, state.learnerModels.learner4]
+            const models = state.models[id] || []
             content = <LearnerContent models={models} />
           } else if (id === 'tasks') {
             content = <TasksContent tasks={state.tasks} />
           } else if (id === 'score') {
-            content = <ScoreContent seconds={state.timer} />
+            content = <ScoreContent user1={state.score.user1} user2={state.score.user2} />
           } else if (id === 'leaderboard') {
             content = <LeaderboardContent entries={state.leaderboard} />
           } else if (id === 'profile') {
-            content = <ProfileContent username={state.username} onLogout={logout} />
+            content = <ProfileContent
+              username={state.user?.username || 'Admin'}
+              avatarUrl={state.user?.avatarUrl}
+              onLogout={logout}
+            />
           }
 
           return (
@@ -96,7 +137,7 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
       {!state.authenticated && (
         <>
           <div className="win-blur" />
-          <LoginModal onLogin={login} />
+          <LoginModal onLogin={(token, user) => dispatch({ type: 'LOGIN', token, user })} />
         </>
       )}
     </div>

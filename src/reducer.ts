@@ -1,29 +1,39 @@
-import type { AppState, AppAction } from './types'
-import { defaultWindows, initialTasks, initialLeaderboard, initialLearnerModels } from './data'
+import type { AppState, AppAction, ApiModel } from './types'
+import { defaultWindows, initialTasks, initialLeaderboard } from './data'
 
 export function createInitialState(): AppState {
   return {
     authenticated: false,
-    username: 'Admin',
+    user: null,
+    token: null,
     activeWindow: 'tasks',
     windows: { ...defaultWindows },
-    timer: 303,
-    leaderboard: initialLeaderboard,
     tasks: initialTasks,
-    learnerModels: initialLearnerModels,
+    models: {},
+    score: { user1: 0, user2: 0 },
+    leaderboard: initialLeaderboard,
+    dataLoaded: false,
   }
 }
 
 export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'LOGIN':
-      return { ...state, authenticated: true }
+      return { ...state, authenticated: true, user: action.user, token: action.token }
 
-    case 'LOGOUT':
-      return { ...createInitialState(), authenticated: false }
+    case 'LOGOUT': {
+      const fresh = createInitialState()
+      return { ...fresh, authenticated: false, user: null, token: null }
+    }
 
-    case 'TICK':
-      return { ...state, timer: state.timer + 1 }
+    case 'SET_DATA':
+      return {
+        ...state,
+        tasks: action.tasks,
+        models: action.models,
+        score: action.score,
+        dataLoaded: true,
+      }
 
     case 'FOCUS_WINDOW': {
       const w = state.windows[action.id]

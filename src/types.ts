@@ -1,18 +1,39 @@
-export interface Task {
+export interface User {
+  id: number
+  login: string
+  username: string
+  avatarUrl: string | null
+}
+
+export interface AuthResponse {
+  token: string
+  user: User
+}
+
+export interface ApiTask {
+  id: number
   title: string
-  diff: 'Hard' | 'Medium'
-  thumb: string
+  difficulty: 'Hard' | 'Medium'
+  description: string
+  deadline: string | null
+  main_image_url: string | null
+  created_at: string
+  images?: ApiTaskImage[]
 }
 
-export interface LearnerModel {
-  name: string
+export interface ApiTaskImage {
+  id: number
+  image_url: string
+}
+
+export interface ApiModel {
+  id: number
+  user_id: number
+  task_id: number | null
+  filename: string
+  file_url: string | null
   status: string
-  time: string
-}
-
-export interface LeaderEntry {
-  name: string
-  score: number
+  uploaded_at: string
 }
 
 export interface WindowState {
@@ -30,19 +51,21 @@ export interface WindowState {
 
 export interface AppState {
   authenticated: boolean
-  username: string
+  user: User | null
+  token: string | null
   activeWindow: string | null
   windows: Record<string, WindowState>
-  timer: number
-  leaderboard: LeaderEntry[]
-  tasks: Task[]
-  learnerModels: Record<string, LearnerModel>
+  tasks: ApiTask[]
+  models: Record<string, ApiModel[]>
+  score: { user1: number; user2: number }
+  leaderboard: { name: string; score: number }[]
+  dataLoaded: boolean
 }
 
 export type AppAction =
-  | { type: 'LOGIN' }
+  | { type: 'LOGIN'; user: User; token: string }
   | { type: 'LOGOUT' }
-  | { type: 'TICK' }
+  | { type: 'SET_DATA'; tasks: ApiTask[]; models: Record<string, ApiModel[]>; score: { user1: number; user2: number } }
   | { type: 'FOCUS_WINDOW'; id: string }
   | { type: 'MINIMIZE'; id: string }
   | { type: 'MAXIMIZE'; id: string }

@@ -1,8 +1,9 @@
 import { memo } from 'react'
-import type { LeaderEntry } from '../types'
+
+interface Entry { name: string; score: number }
 
 interface Props {
-  entries: LeaderEntry[]
+  entries: Entry[]
 }
 
 const LeaderboardContent = memo(function LeaderboardContent({ entries }: Props) {

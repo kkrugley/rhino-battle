@@ -1,0 +1,33 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  login TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  username TEXT NOT NULL,
+  avatar_url TEXT DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS tasks (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  difficulty TEXT NOT NULL,
+  description TEXT DEFAULT '',
+  deadline TIMESTAMP DEFAULT NULL,
+  main_image_url TEXT DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS task_images (
+  id SERIAL PRIMARY KEY,
+  task_id INT REFERENCES tasks(id) ON DELETE CASCADE,
+  image_url TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS models (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  task_id INT REFERENCES tasks(id) ON DELETE SET NULL,
+  filename TEXT NOT NULL,
+  file_url TEXT DEFAULT NULL,
+  status TEXT DEFAULT 'pending',
+  uploaded_at TIMESTAMP DEFAULT NOW()
+);
