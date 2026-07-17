@@ -13,17 +13,19 @@ const DIFF_COLORS: Record<string, string> = {
 interface Props {
   tasks: ApiTask[]
   token: string | null
+  completedTaskIds: Set<number>
   onAddTask: (task: ApiTask) => void
   onDeleteTask: (taskId: number) => void
   onReorderTasks: (tasks: ApiTask[]) => void
 }
 
 const TaskItem = memo(function TaskItem({
-  task, token, editMode, onMoveUp, onMoveDown, onDelete
+  task, token, editMode, completed, onMoveUp, onMoveDown, onDelete
 }: {
   task: ApiTask
   token: string | null
   editMode: boolean
+  completed: boolean
   onMoveUp: () => void
   onMoveDown: () => void
   onDelete: () => void
@@ -67,7 +69,10 @@ const TaskItem = memo(function TaskItem({
         )}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 11, color: '#000' }}>{task.title}</div>
+            <div style={{ fontWeight: 700, fontSize: 11, color: '#000', display: 'flex', alignItems: 'center', gap: 4 }}>
+              {task.title}
+              {completed && <span style={{ color: '#008000', fontSize: 14 }}>&#10003;</span>}
+            </div>
             <div style={{ fontSize: 11, fontWeight: 700, marginTop: 4, color: DIFF_COLORS[task.difficulty] || '#000' }}>
               Difficulty: {task.difficulty}
             </div>
@@ -132,6 +137,7 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
   const [error, setError] = useState('')
   const [mainImage, setMainImage] = useState<string | null>(null)
   const [extraImages, setExtraImages] = useState<string[]>([])
+  const MAX_EXTRA = 5
 
   const titleRef = useRef<HTMLInputElement>(null)
   const diffRef = useRef<HTMLSelectElement>(null)
@@ -161,14 +167,17 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
 
   const handleExtraImages = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
+    const slots = MAX_EXTRA - extraImages.length
+    if (slots <= 0) { setError('Max 5 additional images'); return }
+    const toUpload = files.slice(0, slots)
     const urls: string[] = []
-    for (const f of files) {
+    for (const f of toUpload) {
       const url = await uploadToVgy(f)
       if (url) urls.push(url)
     }
     if (urls.length) setExtraImages(prev => [...prev, ...urls])
     else setError('Failed to upload some images')
-  }, [uploadToVgy])
+  }, [extraImages.length, uploadToVgy])
 
   const handleSave = useCallback(async () => {
     const title = titleRef.current?.value.trim()
@@ -183,7 +192,7 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
     setError('')
 
     try {
-      const body: any = { title, difficulty, description, deadline: deadline ? new Date(deadline).toISOString() : null, mainImageUrl: mainImage }
+      const body: any = { title, difficulty, description, deadline: deadline ? new Date(deadline).toISOString() : null, mainImageUrl: mainImage, taskImages: extraImages }
       const res = await fetch(API + '/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
@@ -252,7 +261,10 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
           </div>
 
           <div className="win-inset" style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div style={{ fontWeight: 700 }}>Additional Photos</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontWeight: 700 }}>Additional Photos</span>
+              <span style={{ fontSize: 10, color: '#595a5b' }}>{extraImages.length}/{MAX_EXTRA}</span>
+            </div>
             {extraImages.length > 0 && (
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {extraImages.map((url, i) => (
@@ -264,7 +276,8 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
                 ))}
               </div>
             )}
-            <button className="win-button" style={{ height: 22, padding: '0 8px', alignSelf: 'flex-start' }} onClick={() => extraFileRef.current?.click()}>Add Photos</button>
+            <button className="win-button" style={{ height: 22, padding: '0 8px', alignSelf: 'flex-start' }}
+              onClick={() => extraFileRef.current?.click()} disabled={extraImages.length >= MAX_EXTRA}>Add Photos</button>
             <input ref={extraFileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handleExtraImages} />
           </div>
 
@@ -282,7 +295,7 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
   )
 }
 
-const TasksContent = memo(function TasksContent({ tasks, token, onAddTask, onDeleteTask, onReorderTasks }: Props) {
+const TasksContent = memo(function TasksContent({ tasks, token, completedTaskIds, onAddTask, onDeleteTask, onReorderTasks }: Props) {
   const [menu, setMenu] = useState<string | null>(null)
   const [showAdd, setShowAdd] = useState(false)
   const [editMode, setEditMode] = useState(false)
@@ -348,7 +361,7 @@ const TasksContent = memo(function TasksContent({ tasks, token, onAddTask, onDel
         {tasks.length === 0 ? (
           <div style={{ textAlign: 'center', padding: 32, color: '#808080', fontSize: 11 }}>No tasks yet</div>
         ) : tasks.map((t, i) => (
-          <TaskItem key={t.id} task={t} token={token} editMode={editMode}
+          <TaskItem key={t.id} task={t} token={token} editMode={editMode} completed={completedTaskIds.has(t.id)}
             onMoveUp={() => moveItem(i, -1)}
             onMoveDown={() => moveItem(i, 1)}
             onDelete={() => handleDelete(t.id)}

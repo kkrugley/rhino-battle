@@ -99,9 +99,17 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
           if (id === 'learner1' || id === 'learner2') {
             const models = state.models[id] || []
             const showDropZone = (id === 'learner1' && state.user?.id === 1) || (id === 'learner2' && state.user?.id === 2)
-            content = <LearnerContent models={models} token={state.token} onModelAdded={onModelAdded} showDropZone={showDropZone} />
+            content = <LearnerContent models={models} tasks={state.tasks} token={state.token} onModelAdded={onModelAdded} showDropZone={showDropZone} />
           } else if (id === 'tasks') {
-            content = <TasksContent tasks={state.tasks} token={state.token} onAddTask={(t) => dispatch({ type: 'ADD_TASK', task: t })} onDeleteTask={(id) => dispatch({ type: 'DELETE_TASK', taskId: id })} onReorderTasks={(tasks) => dispatch({ type: 'REORDER_TASKS', tasks })} />
+            const models1 = state.models['learner1'] || []
+            const models2 = state.models['learner2'] || []
+            const ids1 = new Set(models1.filter(m => m.task_id).map(m => m.task_id!))
+            const ids2 = new Set(models2.filter(m => m.task_id).map(m => m.task_id!))
+            const completedTaskIds = new Set([...ids1].filter(id => ids2.has(id)))
+            content = <TasksContent tasks={state.tasks} token={state.token} completedTaskIds={completedTaskIds}
+              onAddTask={(t) => dispatch({ type: 'ADD_TASK', task: t })}
+              onDeleteTask={(id) => dispatch({ type: 'DELETE_TASK', taskId: id })}
+              onReorderTasks={(tasks) => dispatch({ type: 'REORDER_TASKS', tasks })} />
           } else if (id === 'score') {
             content = <ScoreContent user1={state.score.user1} user2={state.score.user2} />
           } else if (id === 'leaderboard') {

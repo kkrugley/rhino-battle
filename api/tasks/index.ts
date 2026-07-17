@@ -24,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'POST') {
-    const { title, difficulty, description, deadline, mainImageUrl } = req.body
+    const { title, difficulty, description, deadline, mainImageUrl, taskImages } = req.body
     if (!title || !difficulty) return res.status(400).json({ error: 'Title and difficulty required' })
 
     const [{ maxOrder }] = await sql`SELECT COALESCE(MAX(sort_order), 0) + 1 AS max_order FROM tasks`
@@ -33,6 +33,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       VALUES (${title}, ${difficulty}, ${description || ''}, ${deadline || null}, ${mainImageUrl || null}, ${maxOrder})
       RETURNING id, title, difficulty, description, deadline, main_image_url, sort_order, created_at
     `
+    if (Array.isArray(taskImages) && taskImages.length > 0) {
+      for (const url of taskImages.slice(0, 5)) {
+        await sql`INSERT INTO task_images (task_id, image_url) VALUES (${task.id}, ${url})`
+      }
+    }
     return res.status(201).json(task)
   }
 
