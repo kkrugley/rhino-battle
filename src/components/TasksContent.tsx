@@ -8,7 +8,7 @@ const VGY_KEY = import.meta.env.VITE_VGY_USERKEY || ''
 
 function isModelUrl(url: string) {
   const ext = url.split('.').pop()?.toLowerCase() || ''
-  return ext === 'glb' || ext === 'gltf' || ext === 'stl' || ext === 'obj' || ext === '3dm' || ext === 'fbx'
+  return ext === 'glb' || ext === 'gltf' || ext === 'stl' || ext === 'obj' || ext === '3dm' || ext === 'fbx' || ext === 'usd' || ext === 'usda' || ext === 'usdc' || ext === 'usdz'
 }
 
 const DIFF_COLORS: Record<string, string> = {
@@ -281,7 +281,7 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
                 <button className="win-button" style={{ height: 22, padding: '0 8px' }} onClick={() => mainFileRef.current?.click()} disabled={mainUploading}>
                   {mainUploading ? 'Uploading...' : 'Upload Image / 3D Model'}
                 </button>
-                <input ref={mainFileRef} type="file" accept="image/*,.glb,.obj,.3dm,.stl,.fbx" style={{ display: 'none' }} onChange={handleMainImage} />
+                <input ref={mainFileRef} type="file" accept="image/*,.glb,.obj,.3dm,.stl,.fbx,.usd,.usda,.usdc,.usdz" style={{ display: 'none' }} onChange={handleMainImage} />
               </div>
             )}
           </div>

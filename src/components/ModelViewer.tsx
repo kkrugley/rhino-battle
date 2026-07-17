@@ -105,6 +105,15 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
               child.receiveShadow = true
             }
           })
+        } else if (ext === 'usd' || ext === 'usda' || ext === 'usdc' || ext === 'usdz') {
+          const { USDLoader } = await import('three/examples/jsm/loaders/USDLoader.js')
+          object = await new USDLoader().loadAsync(src)
+          object.traverse((child: any) => {
+            if (child.isMesh) {
+              child.castShadow = true
+              child.receiveShadow = true
+            }
+          })
         } else {
           setFailed('Unsupported format')
           return

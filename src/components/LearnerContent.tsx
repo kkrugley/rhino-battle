@@ -149,7 +149,7 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     const files = Array.from(e.dataTransfer.files).filter(f =>
-      f.name.endsWith('.glb') || f.name.endsWith('.obj') || f.name.endsWith('.3dm') || f.name.endsWith('.stl')
+      f.name.endsWith('.glb') || f.name.endsWith('.obj') || f.name.endsWith('.3dm') || f.name.endsWith('.stl') || f.name.endsWith('.fbx') || f.name.endsWith('.usd') || f.name.endsWith('.usda') || f.name.endsWith('.usdc') || f.name.endsWith('.usdz')
     )
     if (files.length > 0) doUpload(files[0])
   }, [doUpload])
@@ -174,8 +174,8 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
         <div className="win-dropzone" onDrop={handleDrop} onDragOver={e => e.preventDefault()}
           onClick={uploading ? undefined : handleClick}
           style={{ cursor: uploading ? 'wait' : 'pointer', marginTop: 0, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          {uploading ? 'Uploading...' : 'Drop Zone (click or drag .glb/.obj/.3dm/.stl/.fbx)'}
-          <input ref={fileRef} type="file" accept=".glb,.obj,.3dm,.stl,.fbx" style={{ display: 'none' }} onChange={handleFileChange} />
+          {uploading ? 'Uploading...' : 'Drop Zone (click or drag .glb/.obj/.3dm/.stl/.fbx/.usd/.usdz)'}
+          <input ref={fileRef} type="file" accept=".glb,.obj,.3dm,.stl,.fbx,.usd,.usda,.usdc,.usdz" style={{ display: 'none' }} onChange={handleFileChange} />
         </div>
       )}
       {uploadError && <div style={{ color: '#800000', fontSize: 10 }}>{uploadError}</div>}
