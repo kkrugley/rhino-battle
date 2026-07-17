@@ -1,26 +1,48 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { neon } from '@neondatabase/serverless'
+import { handleUpload, type HandleUploadBody } from '@vercel/blob/client'
 import { jwtVerify } from 'jose'
 
-const sql = neon(process.env.DATABASE_URL!)
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'rhino-battle-secret-key-change-in-production')
 
+async function getUser(token: string) {
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET)
+    return payload as { userId: number; login: string; username: string }
+  } catch { return null }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const token = req.headers.authorization?.replace('Bearer ', '')
-  if (!token) return res.status(401).json({ error: 'Unauthorized' })
-  let user: any
-  try { user = await jwtVerify(token, JWT_SECRET) } catch (_e) { return res.status(401).json({ error: 'Invalid token' }) }
+  const auth = req.headers.authorization?.replace('Bearer ', '')
+  if (!auth) return res.status(401).json({ error: 'Unauthorized' })
 
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+  const user = await getUser(auth)
+  if (!user) return res.status(401).json({ error: 'Invalid token' })
 
-  const { taskId, filename, fileUrl } = req.body
-  if (!filename) return res.status(400).json({ error: 'Filename required' })
+  const body = req.body as HandleUploadBody
 
-  const [model] = await sql`
-    INSERT INTO models (user_id, task_id, filename, file_url, status)
-    VALUES (${user.payload.userId}, ${taskId || null}, ${filename}, ${fileUrl || null}, 'completed')
-    RETURNING id, user_id, task_id, filename, file_url, status, uploaded_at
-  `
+  const jsonResponse = await handleUpload({
+    body,
+    request: req,
+    onBeforeGenerateToken: async (_pathname: string, clientPayload: string | null) => {
+      const cp = clientPayload ? JSON.parse(clientPayload) : {}
+      return {
+        allowedContentTypes: ['.glb', '.obj', '.3dm', '.stl'],
+        maximumSizeInBytes: 50 * 1024 * 1024,
+        tokenPayload: JSON.stringify({ userId: user.userId, taskId: cp.taskId || null }),
+      }
+    },
+    onUploadCompleted: async ({ blob, tokenPayload }) => {
+      if (!tokenPayload) return
+      const { userId, taskId } = JSON.parse(tokenPayload)
+      const { neon } = await import('@neondatabase/serverless')
+      const sql = neon(process.env.DATABASE_URL!)
+      const filename = blob.pathname.split('/').pop() || 'model'
+      await sql`
+        INSERT INTO models (user_id, task_id, filename, file_url, status)
+        VALUES (${userId}, ${taskId}, ${filename}, ${blob.url}, 'completed')
+      `
+    },
+  })
 
-  res.status(201).json(model)
+  res.json(jsonResponse)
 }

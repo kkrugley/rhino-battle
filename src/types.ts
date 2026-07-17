@@ -68,6 +68,7 @@ export type AppAction =
   | { type: 'ADD_TASK'; task: ApiTask }
   | { type: 'DELETE_TASK'; taskId: number }
   | { type: 'REORDER_TASKS'; tasks: ApiTask[] }
+  | { type: 'ADD_MODEL'; userId: number; model: ApiModel }
   | { type: 'SET_DATA'; tasks: ApiTask[]; models: Record<string, ApiModel[]>; score: { user1: number; user2: number } }
   | { type: 'FOCUS_WINDOW'; id: string }
   | { type: 'MINIMIZE'; id: string }

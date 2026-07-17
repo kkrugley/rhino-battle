@@ -35,6 +35,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'REORDER_TASKS':
       return { ...state, tasks: action.tasks }
 
+    case 'ADD_MODEL': {
+      const key = action.userId === 1 ? 'learner1' : 'learner2'
+      const existing = state.models[key] || []
+      return { ...state, models: { ...state.models, [key]: [action.model, ...existing] } }
+    }
+
     case 'SET_DATA':
       return {
         ...state,

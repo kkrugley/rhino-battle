@@ -66,6 +66,11 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
     dispatch({ type: 'LOGOUT' })
   }, [dispatch])
 
+  const onModelAdded = useCallback((model: ApiModel) => {
+    if (!state.user) return
+    dispatch({ type: 'ADD_MODEL', userId: state.user.id, model })
+  }, [state.user, dispatch])
+
   const w = (id: string) => state.windows[id]
 
   return (
@@ -89,7 +94,7 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
           let content = null
           if (id === 'learner1' || id === 'learner2') {
             const models = state.models[id] || []
-            content = <LearnerContent models={models} />
+            content = <LearnerContent models={models} token={state.token} onModelAdded={onModelAdded} />
           } else if (id === 'tasks') {
             content = <TasksContent tasks={state.tasks} token={state.token} onAddTask={(t) => dispatch({ type: 'ADD_TASK', task: t })} onDeleteTask={(id) => dispatch({ type: 'DELETE_TASK', taskId: id })} onReorderTasks={(tasks) => dispatch({ type: 'REORDER_TASKS', tasks })} />
           } else if (id === 'score') {
