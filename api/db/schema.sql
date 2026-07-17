@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   description TEXT DEFAULT '',
   deadline TIMESTAMP DEFAULT NULL,
   main_image_url TEXT DEFAULT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
   created_at TIMESTAMP DEFAULT NOW()
 );
 

@@ -19,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!user) return res.status(401).json({ error: 'Invalid token' })
 
   if (req.method === 'GET') {
-    const tasks = await sql`SELECT id, title, difficulty, description, deadline, main_image_url, created_at FROM tasks ORDER BY created_at DESC`
+    const tasks = await sql`SELECT id, title, difficulty, description, deadline, main_image_url, sort_order, created_at FROM tasks ORDER BY sort_order ASC, id ASC`
     return res.status(200).json(tasks)
   }
 
@@ -27,12 +27,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { title, difficulty, description, deadline, mainImageUrl } = req.body
     if (!title || !difficulty) return res.status(400).json({ error: 'Title and difficulty required' })
 
+    const [{ maxOrder }] = await sql`SELECT COALESCE(MAX(sort_order), 0) + 1 AS max_order FROM tasks`
     const [task] = await sql`
-      INSERT INTO tasks (title, difficulty, description, deadline, main_image_url)
-      VALUES (${title}, ${difficulty}, ${description || ''}, ${deadline || null}, ${mainImageUrl || null})
-      RETURNING id, title, difficulty, description, deadline, main_image_url, created_at
+      INSERT INTO tasks (title, difficulty, description, deadline, main_image_url, sort_order)
+      VALUES (${title}, ${difficulty}, ${description || ''}, ${deadline || null}, ${mainImageUrl || null}, ${maxOrder})
+      RETURNING id, title, difficulty, description, deadline, main_image_url, sort_order, created_at
     `
     return res.status(201).json(task)
+  }
+
+  if (req.method === 'PUT') {
+    const { taskIds } = req.body
+    if (!Array.isArray(taskIds)) return res.status(400).json({ error: 'taskIds array required' })
+
+    for (let i = 0; i < taskIds.length; i++) {
+      await sql`UPDATE tasks SET sort_order = ${i + 1} WHERE id = ${taskIds[i]}`
+    }
+    return res.status(200).json({ ok: true })
   }
 
   return res.status(405).json({ error: 'Method not allowed' })

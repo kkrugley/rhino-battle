@@ -286,7 +286,12 @@ const TasksContent = memo(function TasksContent({ tasks, token, onAddTask, onDel
     if (target < 0 || target >= next.length) return
     ;[next[index], next[target]] = [next[target], next[index]]
     onReorderTasks(next)
-  }, [tasks, onReorderTasks])
+    fetch(API + '/tasks', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ taskIds: next.map(t => t.id) }),
+    }).catch(() => {})
+  }, [tasks, token, onReorderTasks])
 
   const handleDelete = useCallback(async (taskId: number) => {
     setDeleting(taskId)
