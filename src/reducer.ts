@@ -39,7 +39,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'ADD_MODEL': {
       const key = action.userId === 1 ? 'learner1' : 'learner2'
       const existing = state.models[key] || []
-      return { ...state, models: { ...state.models, [key]: [action.model, ...existing] } }
+      const scoreKey = action.userId === 1 ? 'user1' : 'user2'
+      return {
+        ...state,
+        models: { ...state.models, [key]: [action.model, ...existing] },
+        score: { ...state.score, [scoreKey]: state.score[scoreKey] + 1 },
+      }
     }
 
     case 'SET_AVATAR':

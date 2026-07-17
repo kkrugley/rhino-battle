@@ -173,8 +173,8 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
       {showDropZone && (
         <div className="win-dropzone" onDrop={handleDrop} onDragOver={e => e.preventDefault()}
           onClick={uploading ? undefined : handleClick}
-          style={{ cursor: uploading ? 'wait' : 'pointer', marginTop: 0 }}>
-          {uploading ? 'Uploading...' : 'Drop Zone (click or drag .glb/.obj/.3dm/.stl)'}
+          style={{ cursor: uploading ? 'wait' : 'pointer', marginTop: 0, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          {uploading ? 'Uploading...' : 'Drop Zone (click or drag .glb/.obj/.3dm/.stl/.fbx)'}
           <input ref={fileRef} type="file" accept=".glb,.obj,.3dm,.stl,.fbx" style={{ display: 'none' }} onChange={handleFileChange} />
         </div>
       )}
