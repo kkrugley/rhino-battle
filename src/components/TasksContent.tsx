@@ -165,10 +165,12 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
     try {
       const ext = file.name.split('.').pop() || 'glb'
       const pathname = `task-models/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+      const contentType = ext === 'glb' ? 'model/gltf-binary' : 'application/octet-stream'
       const blob = await upload(pathname, file, {
         access: 'public',
         handleUploadUrl: API + '/models/upload',
         headers: { Authorization: 'Bearer ' + token },
+        contentType,
       })
       return blob.url
     } catch { return null }
@@ -182,7 +184,7 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
     const isModel = file.name.endsWith('.glb') || file.name.endsWith('.obj') || file.name.endsWith('.3dm') || file.name.endsWith('.stl')
     const url = isModel ? await uploadToBlob(file) : await uploadToVgy(file)
     if (url) { setMainImage(url); setMainIsModel(isModel) }
-    else setError('Failed to upload')
+    else setError('Failed to upload main ' + (isModel ? '3D model' : 'image'))
     setMainUploading(false)
     if (mainFileRef.current) mainFileRef.current.value = ''
   }, [uploadToVgy, uploadToBlob])

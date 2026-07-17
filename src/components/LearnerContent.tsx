@@ -131,10 +131,12 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
     try {
       const ext = file.name.split('.').pop() || 'glb'
       const pathname = `models/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+      const contentType = ext === 'glb' ? 'model/gltf-binary' : 'application/octet-stream'
       const blob = await upload(pathname, file, {
         access: 'public',
         handleUploadUrl: API + '/models/upload',
         headers: { Authorization: 'Bearer ' + token },
+        contentType,
       })
       const filenameFromUrl = blob.pathname.split('/').pop() || file.name
       setPendingModel({ fileUrl: blob.url, filename: filenameFromUrl })
