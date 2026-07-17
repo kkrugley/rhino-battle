@@ -164,7 +164,7 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
     if (!token) return null
     try {
       const ext = file.name.split('.').pop() || 'glb'
-      const pathname = `task-models/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.glb`
+      const pathname = `task-models/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
       const blob = await upload(pathname, file, {
         access: 'public',
         handleUploadUrl: API + '/models/upload',

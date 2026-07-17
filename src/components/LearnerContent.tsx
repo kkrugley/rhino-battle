@@ -130,7 +130,7 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
     setUploadError('')
     try {
       const ext = file.name.split('.').pop() || 'glb'
-      const pathname = `models/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.glb`
+      const pathname = `models/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
       const blob = await upload(pathname, file, {
         access: 'public',
         handleUploadUrl: API + '/models/upload',

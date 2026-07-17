@@ -26,7 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     onBeforeGenerateToken: async (_pathname: string, clientPayload: string | null) => {
       const cp = clientPayload ? JSON.parse(clientPayload) : {}
       return {
-        allowedContentTypes: ['.glb', '.obj', '.3dm', '.stl'],
+        allowedContentTypes: ['*/*'],
         maximumSizeInBytes: 50 * 1024 * 1024,
         tokenPayload: JSON.stringify({ userId: user.userId, taskId: cp.taskId || null }),
       }
