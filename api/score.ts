@@ -12,11 +12,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
 
-  const [user1] = await sql`SELECT id FROM users WHERE login = 'learner1' LIMIT 1`
-  const [user2] = await sql`SELECT id FROM users WHERE login = 'learner2' LIMIT 1`
+  const rows = await sql`SELECT u.id, COUNT(m.id)::int as count FROM users u LEFT JOIN models m ON m.user_id = u.id GROUP BY u.id ORDER BY u.id`
 
-  const count1 = user1 ? (await sql`SELECT COUNT(*)::int as count FROM models WHERE user_id = ${user1.id}`)[0].count : 0
-  const count2 = user2 ? (await sql`SELECT COUNT(*)::int as count FROM models WHERE user_id = ${user2.id}`)[0].count : 0
+  const user1 = rows[0]?.count ?? 0
+  const user2 = rows[1]?.count ?? 0
 
-  res.status(200).json({ user1: count1, user2: count2 })
+  res.status(200).json({ user1, user2 })
 }
