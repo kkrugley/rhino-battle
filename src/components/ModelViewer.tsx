@@ -110,6 +110,8 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
 
         scene.add(object)
 
+        controls.fitToBox(new THREE.Box3().setFromObject(object), false)
+
         const animate = () => {
           if (disposed) return
           controls.update()
