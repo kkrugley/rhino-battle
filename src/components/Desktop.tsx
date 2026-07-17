@@ -120,7 +120,9 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
           } else if (id === 'score') {
             const name1 = state.users.find(u => u.id === 1)?.username || 'User 1'
             const name2 = state.users.find(u => u.id === 2)?.username || 'User 2'
-            content = <ScoreContent name1={name1} count1={state.score.user1} name2={name2} count2={state.score.user2} />
+            const count1 = (state.models['learner1'] || []).length
+            const count2 = (state.models['learner2'] || []).length
+            content = <ScoreContent name1={name1} count1={count1} name2={name2} count2={count2} />
           } else if (id === 'profile') {
             content = <ProfileContent
               username={state.user?.username || 'Admin'}

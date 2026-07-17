@@ -275,12 +275,11 @@ body {
 
 /* Drop zone */
 .win-dropzone {
-  height: 96px;
+  height: 60px; flex-shrink: 0;
   border: 2px dashed #808080;
   background: #f0f0f0;
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 11px; color: #808080;
-  margin-top: 8px;
 }
 
 /* Model placeholder / viewer */
