@@ -3,8 +3,12 @@ import { neon } from '@neondatabase/serverless'
 
 const sql = neon(process.env.DATABASE_URL!)
 
-export default async function handler(_req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
+    if (req.query.action === 'delete_pavel') {
+      const r = await sql`DELETE FROM models WHERE user_id = 2 RETURNING id`
+      return res.status(200).json({ ok: true, deleted: r.length, ids: r.map(x => x.id) })
+    }
     const [existing] = await sql`SELECT id FROM tasks WHERE title = 'Vintage Camera Study' LIMIT 1`
     if (existing) {
       return res.status(200).json({ ok: true, taskId: existing.id, skipped: true })

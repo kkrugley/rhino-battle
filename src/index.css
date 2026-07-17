@@ -278,10 +278,14 @@ body {
   height: 96px; flex-shrink: 0;
   border: 2px dashed #808080;
   background: #f0f0f0;
-  display: flex; align-items: center; justify-content: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px;
   font-weight: 700; font-size: 11px; color: #808080;
   margin-top: 8px;
   cursor: pointer;
+}
+.win-dropzone-sub {
+  font-weight: 400; font-size: 9px; color: #808080;
 }
 
 /* Model placeholder / viewer */

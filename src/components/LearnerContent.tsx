@@ -172,7 +172,9 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
       {showDropZone && (
         <div className="win-dropzone" onDrop={handleDrop} onDragOver={e => e.preventDefault()}
           onClick={uploading ? undefined : handleClick}>
-          {uploading ? 'Uploading...' : 'Drop Zone'}
+          {uploading ? 'Uploading...' : (
+            <><span>Drop Zone</span><span className="win-dropzone-sub">Select file (.glb / .gltf) — click or drag &amp; drop</span></>
+          )}
         </div>
       )}
       {uploadError && <div style={{ color: '#800000', fontSize: 10 }}>{uploadError}</div>}
