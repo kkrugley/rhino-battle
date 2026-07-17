@@ -136,12 +136,14 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
 
         const finalBox = new THREE.Box3().setFromObject(group)
         const sphere = finalBox.getBoundingSphere(new THREE.Sphere())
+
+        const dir = new THREE.Vector3(1, 0.5, 1).normalize()
         const fov = camera.fov * Math.PI / 180
         const aspect = camera.aspect
         const d1 = sphere.radius / Math.tan(fov / 2)
         const d2 = sphere.radius / (Math.tan(fov / 2) * aspect)
-        const dist = Math.max(d1, d2) * 1.5
-        camera.position.set(dist, dist * 0.5, dist)
+        const dist = Math.max(d1, d2)
+        camera.position.copy(dir.clone().multiplyScalar(dist))
         controls.target.set(0, 0, 0)
         controls.update()
 
