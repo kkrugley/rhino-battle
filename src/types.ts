@@ -65,6 +65,7 @@ export interface AppState {
 export type AppAction =
   | { type: 'LOGIN'; user: User; token: string }
   | { type: 'LOGOUT' }
+  | { type: 'ADD_TASK'; task: ApiTask }
   | { type: 'SET_DATA'; tasks: ApiTask[]; models: Record<string, ApiModel[]>; score: { user1: number; user2: number } }
   | { type: 'FOCUS_WINDOW'; id: string }
   | { type: 'MINIMIZE'; id: string }

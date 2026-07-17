@@ -26,6 +26,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...fresh, authenticated: false, user: null, token: null }
     }
 
+    case 'ADD_TASK':
+      return { ...state, tasks: [action.task, ...state.tasks] }
+
     case 'SET_DATA':
       return {
         ...state,
