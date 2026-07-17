@@ -60,6 +60,7 @@ export interface AppState {
   score: { user1: number; user2: number }
   leaderboard: { name: string; score: number }[]
   dataLoaded: boolean
+  users: User[]
 }
 
 export type AppAction =
@@ -70,6 +71,7 @@ export type AppAction =
   | { type: 'REORDER_TASKS'; tasks: ApiTask[] }
   | { type: 'ADD_MODEL'; userId: number; model: ApiModel }
   | { type: 'SET_AVATAR'; avatarUrl: string }
+  | { type: 'SET_USERS'; users: User[] }
   | { type: 'SET_DATA'; tasks: ApiTask[]; models: Record<string, ApiModel[]>; score: { user1: number; user2: number } }
   | { type: 'FOCUS_WINDOW'; id: string }
   | { type: 'MINIMIZE'; id: string }

@@ -26,15 +26,16 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
     try {
       const headers = { Authorization: 'Bearer ' + state.token }
 
-      const [tasksRes, m1, m2, scoreRes] = await Promise.all([
+      const [tasksRes, m1, m2, scoreRes, usersRes] = await Promise.all([
         fetch(API + '/tasks', { headers }),
         fetch(API + '/models/1', { headers }),
         fetch(API + '/models/2', { headers }),
         fetch(API + '/score', { headers }),
+        fetch(API + '/users', { headers }),
       ])
 
-      const [tasks, models1, models2, score]: [ApiTask[], ApiModel[], ApiModel[], { user1: number; user2: number }] = await Promise.all([
-        tasksRes.json(), m1.json(), m2.json(), scoreRes.json(),
+      const [tasks, models1, models2, score, users] = await Promise.all([
+        tasksRes.json(), m1.json(), m2.json(), scoreRes.json(), usersRes.json(),
       ])
 
       dispatch({
@@ -43,6 +44,7 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
         models: { learner1: models1, learner2: models2 },
         score,
       })
+      dispatch({ type: 'SET_USERS', users })
     } catch (e) {
       console.error('Failed to load data', e)
     } finally {
@@ -88,9 +90,15 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
             learner1: 'window', tasks: 'terminal', learner2: 'window',
             score: '', leaderboard: '', profile: 'person',
           }
+          const userForLearner1 = state.users.find(u => u.id === 1)
+          const userForLearner2 = state.users.find(u => u.id === 2)
           const titleMap: Record<string, string> = {
-            learner1: 'Learner_01.exe', tasks: 'Tasks.exe', learner2: 'Learner_02.exe',
-            score: 'Match_Score.exe', leaderboard: 'Leaderboard.exe', profile: 'User_Profile.exe',
+            learner1: userForLearner1 ? `${userForLearner1.username} (${userForLearner1.login})` : 'Learner_01.exe',
+            tasks: 'Tasks.exe',
+            learner2: userForLearner2 ? `${userForLearner2.username} (${userForLearner2.login})` : 'Learner_02.exe',
+            score: 'Match_Score.exe',
+            leaderboard: 'Leaderboard.exe',
+            profile: 'User_Profile.exe',
           }
           const isSmall = id === 'score' || id === 'leaderboard' || id === 'profile'
           const isInactive = id === 'learner2' || id === 'leaderboard'

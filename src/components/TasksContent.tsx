@@ -1,5 +1,6 @@
 import { memo, useState, useCallback, useRef } from 'react'
 import type { ApiTask } from '../types'
+import { upload } from '@vercel/blob/client'
 
 const API = '/api'
 const VGY_KEY = import.meta.env.VITE_VGY_USERKEY || ''
@@ -136,6 +137,8 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [mainImage, setMainImage] = useState<string | null>(null)
+  const [mainIsModel, setMainIsModel] = useState(false)
+  const [mainUploading, setMainUploading] = useState(false)
   const [extraImages, setExtraImages] = useState<string[]>([])
   const MAX_EXTRA = 5
 
@@ -157,13 +160,32 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
     } catch { return null }
   }, [])
 
+  const uploadToBlob = useCallback(async (file: File): Promise<string | null> => {
+    if (!token) return null
+    try {
+      const ext = file.name.split('.').pop() || 'glb'
+      const pathname = `task-models/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+      const blob = await upload(pathname, file, {
+        access: 'public',
+        handleUploadUrl: API + '/models/upload',
+        headers: { Authorization: 'Bearer ' + token },
+      })
+      return blob.url
+    } catch { return null }
+  }, [token])
+
   const handleMainImage = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const url = await uploadToVgy(file)
-    if (url) setMainImage(url)
-    else setError('Failed to upload main image')
-  }, [uploadToVgy])
+    setMainUploading(true)
+    setError('')
+    const isModel = file.name.endsWith('.glb') || file.name.endsWith('.obj') || file.name.endsWith('.3dm') || file.name.endsWith('.stl')
+    const url = isModel ? await uploadToBlob(file) : await uploadToVgy(file)
+    if (url) { setMainImage(url); setMainIsModel(isModel) }
+    else setError('Failed to upload')
+    setMainUploading(false)
+    if (mainFileRef.current) mainFileRef.current.value = ''
+  }, [uploadToVgy, uploadToBlob])
 
   const handleExtraImages = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -245,17 +267,23 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
           </div>
 
           <div className="win-inset" style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div style={{ fontWeight: 700 }}>Main Reference Image</div>
+            <div style={{ fontWeight: 700 }}>Main Reference Image / 3D Model</div>
             {mainImage ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <img src={mainImage} alt="" style={{ width: 64, height: 64, objectFit: 'cover', border: '1px solid #000' }} />
+                {mainIsModel ? (
+                  <model-viewer src={mainImage} style={{ width: 64, height: 64, background: '#e5e7eb', border: '1px solid #000' }} camera-controls auto-rotate disable-zoom shadow-intensity="1" alt="" />
+                ) : (
+                  <img src={mainImage} alt="" style={{ width: 64, height: 64, objectFit: 'cover', border: '1px solid #000' }} />
+                )}
                 <span style={{ color: '#008000', fontSize: 10 }}>Uploaded</span>
-                <button className="win-button" style={{ height: 20, padding: '0 6px', fontSize: 10 }} onClick={() => setMainImage(null)}>Remove</button>
+                <button className="win-button" style={{ height: 20, padding: '0 6px', fontSize: 10 }} onClick={() => { setMainImage(null); setMainIsModel(false) }}>Remove</button>
               </div>
             ) : (
               <div>
-                <button className="win-button" style={{ height: 22, padding: '0 8px' }} onClick={() => mainFileRef.current?.click()}>Upload Image</button>
-                <input ref={mainFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleMainImage} />
+                <button className="win-button" style={{ height: 22, padding: '0 8px' }} onClick={() => mainFileRef.current?.click()} disabled={mainUploading}>
+                  {mainUploading ? 'Uploading...' : 'Upload Image / .glb'}
+                </button>
+                <input ref={mainFileRef} type="file" accept="image/*,.glb,.obj,.3dm,.stl" style={{ display: 'none' }} onChange={handleMainImage} />
               </div>
             )}
           </div>

@@ -33,11 +33,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       VALUES (${title}, ${difficulty}, ${description || ''}, ${deadline || null}, ${mainImageUrl || null}, ${maxOrder})
       RETURNING id, title, difficulty, description, deadline, main_image_url, sort_order, created_at
     `
-    if (Array.isArray(taskImages) && taskImages.length > 0) {
-      for (const url of taskImages.slice(0, 5)) {
-        await sql`INSERT INTO task_images (task_id, image_url) VALUES (${task.id}, ${url})`
+    try {
+      if (Array.isArray(taskImages) && taskImages.length > 0) {
+        for (const url of taskImages) {
+          await sql`INSERT INTO task_images (task_id, image_url) VALUES (${task.id}, ${url})`
+        }
       }
-    }
+    } catch { /* images are non-critical */ }
     return res.status(201).json(task)
   }
 

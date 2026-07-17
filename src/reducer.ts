@@ -13,6 +13,7 @@ export function createInitialState(): AppState {
     score: { user1: 0, user2: 0 },
     leaderboard: initialLeaderboard,
     dataLoaded: false,
+    users: [],
   }
 }
 
@@ -43,6 +44,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case 'SET_AVATAR':
       return state.user ? { ...state, user: { ...state.user, avatarUrl: action.avatarUrl } } : state
+
+    case 'SET_USERS':
+      return { ...state, users: action.users }
 
     case 'SET_DATA':
       return {

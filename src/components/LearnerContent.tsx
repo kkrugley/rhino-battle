@@ -121,11 +121,13 @@ function AssignTaskModal({
 const LearnerContent = memo(function LearnerContent({ models, tasks, token, onModelAdded, showDropZone }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
   const [pendingModel, setPendingModel] = useState<{ fileUrl: string; filename: string } | null>(null)
 
   const doUpload = useCallback(async (file: File) => {
     if (!token || uploading) return
     setUploading(true)
+    setUploadError('')
     try {
       const ext = file.name.split('.').pop() || 'glb'
       const pathname = `models/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
@@ -138,6 +140,7 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
       setPendingModel({ fileUrl: blob.url, filename: filenameFromUrl })
     } catch (e) {
       console.error('Upload failed', e)
+      setUploadError('Upload failed. Check console for details.')
     } finally {
       setUploading(false)
     }
@@ -160,7 +163,10 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
     if (files.length > 0) doUpload(files[0])
   }, [doUpload])
 
-  const handleClick = useCallback(() => fileRef.current?.click(), [])
+  const handleClick = useCallback(() => {
+    setUploadError('')
+    fileRef.current?.click()
+  }, [])
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -181,6 +187,7 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
           <input ref={fileRef} type="file" accept=".glb,.obj,.3dm,.stl" style={{ display: 'none' }} onChange={handleFileChange} />
         </div>
       )}
+      {uploadError && <div style={{ color: '#800000', fontSize: 10 }}>{uploadError}</div>}
       {visible.map(m => <ModelCard key={m.id} model={m} />)}
       {hidden.length > 0 && (
         <div style={{ maxHeight: 250, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
