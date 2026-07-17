@@ -9,7 +9,8 @@ interface Props {
 
 export default function ModelViewer({ src, style, autoRotate = true }: Props) {
   const ref = useRef<HTMLDivElement>(null)
-  const [failed, setFailed] = useState(false)
+  const [failed, setFailed] = useState('')
+  const [info, setInfo] = useState('')
 
   useEffect(() => {
     if (!ref.current || !src) return
@@ -53,7 +54,7 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
       back.position.set(-1, -1, -1)
       scene.add(back)
 
-        const ext = src.split('.').pop()?.toLowerCase() || ''
+      const ext = src.split('.').pop()?.toLowerCase() || ''
       try {
         let object: any
         if (ext === 'glb' || ext === 'gltf') {
@@ -70,15 +71,17 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
           })
         } else if (ext === 'stl') {
           const { STLLoader } = await import('three/examples/jsm/loaders/STLLoader.js')
-          const geom = await new Promise<any>((resolve, reject) =>
-            new STLLoader().load(src, resolve, undefined, reject)
-          )
+          const loader = new STLLoader()
+          const geom = await loader.loadAsync(src)
           if (!geom.attributes.position) throw new Error('STL has no position attribute')
-          geom.computeVertexNormals()
+          const verts = geom.attributes.position.count
+          setInfo(`STL ${verts} verts`)
           const mat = new THREE.MeshStandardMaterial({
             color: 0x808080, metalness: 0.3, roughness: 0.4, side: THREE.DoubleSide,
           })
           object = new THREE.Mesh(geom, mat)
+          object.castShadow = true
+          object.receiveShadow = true
         } else if (ext === 'obj') {
           const { OBJLoader } = await import('three/examples/jsm/loaders/OBJLoader.js')
           object = await new Promise<any>((resolve, reject) =>
@@ -92,7 +95,7 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
             }
           })
         } else {
-          setFailed(true)
+          setFailed('Unsupported format')
           return
         }
 
@@ -102,10 +105,8 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
         const scale = 2 / maxDim
         object.scale.setScalar(scale)
 
-        // re-compute box after scale and center
-        const box2 = new THREE.Box3().setFromObject(object)
-        const center = box2.getCenter(new THREE.Vector3())
-        object.position.copy(center.clone().negate())
+        const center = box.getCenter(new THREE.Vector3())
+        object.position.copy(center.clone().negate().multiplyScalar(scale))
 
         scene.add(object)
 
@@ -118,7 +119,7 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
         animate()
       } catch (e) {
         console.error('ModelViewer error:', src, e)
-        setFailed(true)
+        setFailed(String(e))
       }
     }
 
@@ -137,7 +138,8 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
 
   return (
     <div ref={ref} style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', ...style, background: '#e5e7eb' }}>
-      {failed && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#800000', fontSize: 11 }}>Unsupported format</div>}
+      {info && !failed && <div style={{ position: 'absolute', top: 2, left: 2, color: '#c00', fontSize: 8, zIndex: 1 }}>{info}</div>}
+      {failed && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#800000', fontSize: 11, padding: 4 }}>{failed}</div>}
     </div>
   )
 }
