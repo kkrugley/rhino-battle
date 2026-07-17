@@ -119,23 +119,28 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
           return
         }
 
-        const box = new THREE.Box3().setFromObject(object)
+        const group = new THREE.Group()
+        group.add(object)
+
+        const box = new THREE.Box3().setFromObject(group)
         const size = box.getSize(new THREE.Vector3())
-        const maxDim = Math.max(size.x, size.y, size.z, 0.001)
-        const scale = 2 / maxDim
-        object.scale.setScalar(scale)
-
         const center = box.getCenter(new THREE.Vector3())
-        object.position.copy(center.clone().negate().multiplyScalar(scale))
+        const maxDim = Math.max(size.x, size.y, size.z, 0.001)
 
-        scene.add(object)
+        group.position.copy(center.clone().negate())
 
-        const bs = new THREE.Box3().setFromObject(object).getBoundingSphere(new THREE.Sphere())
+        const fitScale = 1 / (maxDim * 0.5)
+        group.scale.setScalar(fitScale)
+
+        scene.add(group)
+
+        const finalBox = new THREE.Box3().setFromObject(group)
+        const sphere = finalBox.getBoundingSphere(new THREE.Sphere())
         const fov = camera.fov * Math.PI / 180
         const aspect = camera.aspect
-        const d1 = bs.radius / Math.tan(fov / 2)
-        const d2 = bs.radius / (Math.tan(fov / 2) * aspect)
-        const dist = Math.max(d1, d2) * 1.2
+        const d1 = sphere.radius / Math.tan(fov / 2)
+        const d2 = sphere.radius / (Math.tan(fov / 2) * aspect)
+        const dist = Math.max(d1, d2) * 1.5
         camera.position.set(dist, dist * 0.5, dist)
         controls.target.set(0, 0, 0)
         controls.update()
