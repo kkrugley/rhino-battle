@@ -1,14 +1,13 @@
 import { memo, useState, useCallback, useRef } from 'react'
 import type { ApiTask } from '../types'
 import { upload } from '@vercel/blob/client'
-import ModelViewer from './ModelViewer'
 
 const API = '/api'
 const VGY_KEY = import.meta.env.VITE_VGY_USERKEY || ''
 
 function isModelUrl(url: string) {
   const ext = url.split('.').pop()?.toLowerCase() || ''
-  return ext === 'glb' || ext === 'gltf' || ext === 'stl' || ext === 'obj' || ext === '3dm' || ext === 'fbx' || ext === 'usd' || ext === 'usda' || ext === 'usdc' || ext === 'usdz'
+  return ext === 'glb' || ext === 'gltf'
 }
 
 const DIFF_COLORS: Record<string, string> = {
@@ -62,7 +61,7 @@ const TaskItem = memo(function TaskItem({
         )}
         {task.main_image_url ? (
           isModelUrl(task.main_image_url) ? (
-            <ModelViewer src={task.main_image_url} style={{ width: 96, height: 96, border: '1px solid #000', flexShrink: 0 }} />
+            <model-viewer src={task.main_image_url} style={{ width: 96, height: 96, border: '1px solid #000', flexShrink: 0, background: '#e5e7eb' }} camera-controls auto-rotate disable-zoom shadow-intensity="1" alt={task.title}></model-viewer>
           ) : (
             <img src={task.main_image_url} alt={task.title} loading="lazy" style={{ width: 96, height: 96, objectFit: 'cover', border: '1px solid #000', flexShrink: 0 }} />
           )
@@ -106,7 +105,7 @@ const TaskItem = memo(function TaskItem({
             <div style={{ padding: 8, overflowY: 'auto' }}>
               {data.main_image_url ? (
                 isModelUrl(data.main_image_url) ? (
-                  <ModelViewer src={data.main_image_url} style={{ width: '100%', height: 240, borderWidth: 2, borderStyle: 'solid', borderColor: '#808080 #ffffff #ffffff #808080', marginBottom: 8 }} />
+                  <model-viewer src={data.main_image_url} style={{ width: '100%', height: 240, background: '#e5e7eb', borderWidth: 2, borderStyle: 'solid', borderColor: '#808080 #ffffff #ffffff #808080', marginBottom: 8 }} camera-controls auto-rotate shadow-intensity="1" alt={data.title}></model-viewer>
                 ) : (
                   <img src={data.main_image_url} alt={data.title} style={{ width: '100%', maxHeight: 240, objectFit: 'contain', border: '1px solid #000', marginBottom: 8 }} />
                 )
@@ -177,7 +176,7 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
     if (!file) return
     setMainUploading(true)
     setError('')
-    const isModel = file.name.endsWith('.glb') || file.name.endsWith('.obj') || file.name.endsWith('.3dm') || file.name.endsWith('.stl')
+    const isModel = file.name.endsWith('.glb') || file.name.endsWith('.gltf')
     const url = isModel ? await uploadToBlob(file) : await uploadToVgy(file)
     if (url) { setMainImage(url); setMainIsModel(isModel) }
     else setError('Failed to upload main ' + (isModel ? '3D model' : 'image'))
@@ -269,7 +268,7 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
             {mainImage ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {mainIsModel ? (
-                  <ModelViewer src={mainImage} style={{ width: 64, height: 64, border: '1px solid #000' }} />
+                  <model-viewer src={mainImage} style={{ width: 64, height: 64, border: '1px solid #000', background: '#e5e7eb' }} camera-controls auto-rotate disable-zoom shadow-intensity="1"></model-viewer>
                 ) : (
                   <img src={mainImage} alt="" style={{ width: 64, height: 64, objectFit: 'cover', border: '1px solid #000' }} />
                 )}
@@ -281,7 +280,7 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
                 <button className="win-button" style={{ height: 22, padding: '0 8px' }} onClick={() => mainFileRef.current?.click()} disabled={mainUploading}>
                   {mainUploading ? 'Uploading...' : 'Upload Image / 3D Model'}
                 </button>
-                <input ref={mainFileRef} type="file" accept="image/*,.glb,.obj,.3dm,.stl,.fbx,.usd,.usda,.usdc,.usdz" style={{ display: 'none' }} onChange={handleMainImage} />
+                <input ref={mainFileRef} type="file" accept="image/*,.glb,.gltf" style={{ display: 'none' }} onChange={handleMainImage} />
               </div>
             )}
           </div>

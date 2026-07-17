@@ -1,7 +1,6 @@
 import { memo, useCallback, useRef, useState } from 'react'
 import type { ApiModel, ApiTask } from '../types'
 import { upload } from '@vercel/blob/client'
-import ModelViewer from './ModelViewer'
 
 const API = '/api'
 
@@ -17,7 +16,7 @@ const ModelCard = memo(function ModelCard({ model }: { model: ApiModel }) {
   return (
     <div className="win-card">
       {model.file_url ? (
-        <ModelViewer src={model.file_url} style={{ width: '100%', height: 128 }} />
+        <model-viewer src={model.file_url} style={{ width: '100%', height: 128, background: '#e5e7eb', borderWidth: 2, borderStyle: 'solid', borderColor: '#808080 #ffffff #ffffff #808080' }} camera-controls auto-rotate disable-zoom shadow-intensity="1" alt={model.filename}></model-viewer>
       ) : (
         <div className="win-model" />
       )}
@@ -75,7 +74,7 @@ function AssignTaskModal({
           <button className="win-btn-sm" onClick={onClose} disabled={saving}><span style={{ fontWeight: 700, fontSize: 8 }}>x</span></button>
         </div>
         <div style={{ padding: 8, overflowY: 'auto' }}>
-          <ModelViewer src={fileUrl} style={{ width: '100%', height: 200, borderWidth: 2, borderStyle: 'solid', borderColor: '#808080 #ffffff #ffffff #808080', marginBottom: 8 }} />
+          <model-viewer src={fileUrl} style={{ width: '100%', height: 200, background: '#e5e7eb', borderWidth: 2, borderStyle: 'solid', borderColor: '#808080 #ffffff #ffffff #808080', marginBottom: 8 }} camera-controls auto-rotate shadow-intensity="1" alt={filename}></model-viewer>
           <div style={{ fontWeight: 700, fontSize: 11, marginBottom: 6 }}>Select completed task:</div>
           {tasks.length === 0 ? (
             <div style={{ color: '#808080', fontSize: 11 }}>No tasks available</div>
@@ -149,7 +148,7 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     const files = Array.from(e.dataTransfer.files).filter(f =>
-      f.name.endsWith('.glb') || f.name.endsWith('.obj') || f.name.endsWith('.3dm') || f.name.endsWith('.stl') || f.name.endsWith('.fbx') || f.name.endsWith('.usd') || f.name.endsWith('.usda') || f.name.endsWith('.usdc') || f.name.endsWith('.usdz')
+      f.name.endsWith('.glb') || f.name.endsWith('.gltf')
     )
     if (files.length > 0) doUpload(files[0])
   }, [doUpload])
@@ -174,8 +173,8 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
         <div className="win-dropzone" onDrop={handleDrop} onDragOver={e => e.preventDefault()}
           onClick={uploading ? undefined : handleClick}
           style={{ cursor: uploading ? 'wait' : 'pointer' }}>
-          {uploading ? 'Uploading...' : 'Drop Zone (click or drag .glb/.obj/.3dm/.stl/.fbx/.usd/.usdz)'}
-          <input ref={fileRef} type="file" accept=".glb,.obj,.3dm,.stl,.fbx,.usd,.usda,.usdc,.usdz" style={{ display: 'none' }} onChange={handleFileChange} />
+          {uploading ? 'Uploading...' : 'Drop Zone'}
+          <input ref={fileRef} type="file" accept=".glb,.gltf" style={{ display: 'none' }} onChange={handleFileChange} />
         </div>
       )}
       {uploadError && <div style={{ color: '#800000', fontSize: 10 }}>{uploadError}</div>}
