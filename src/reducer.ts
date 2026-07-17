@@ -1,4 +1,4 @@
-import type { AppState, AppAction, ApiModel } from './types'
+import type { AppState, AppAction, ApiModel, User } from './types'
 import { defaultWindows, initialTasks, initialLeaderboard } from './data'
 
 export function createInitialState(): AppState {
@@ -55,12 +55,18 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     }
 
     case 'SET_USERS': {
+      const users: User[] = action.users.map((u: any) => ({
+        id: u.id,
+        login: u.login,
+        username: u.username,
+        avatarUrl: u.avatar_url ?? null,
+      }))
       let user = state.user
       if (user) {
-        const matched = action.users.find(u => u.id === user!.id)
-        if (matched) user = { ...user, avatarUrl: matched.avatar_url ?? null }
+        const matched = users.find(u => u.id === user!.id)
+        if (matched) user = { ...user, avatarUrl: matched.avatarUrl }
       }
-      return { ...state, users: action.users, user }
+      return { ...state, users, user }
     }
 
     case 'SET_DATA':
