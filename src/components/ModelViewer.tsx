@@ -130,7 +130,15 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
 
         scene.add(object)
 
-        controls.fitToBox(new THREE.Box3().setFromObject(object), false)
+        const bs = new THREE.Box3().setFromObject(object).getBoundingSphere(new THREE.Sphere())
+        const fov = camera.fov * Math.PI / 180
+        const aspect = camera.aspect
+        const d1 = bs.radius / Math.tan(fov / 2)
+        const d2 = bs.radius / (Math.tan(fov / 2) * aspect)
+        const dist = Math.max(d1, d2) * 1.2
+        camera.position.set(dist, dist * 0.5, dist)
+        controls.target.set(0, 0, 0)
+        controls.update()
 
         const animate = () => {
           if (disposed) return
