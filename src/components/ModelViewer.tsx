@@ -94,6 +94,17 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
               child.receiveShadow = true
             }
           })
+        } else if (ext === 'fbx') {
+          const { FBXLoader } = await import('three/examples/jsm/loaders/FBXLoader.js')
+          object = await new Promise<any>((resolve, reject) =>
+            new FBXLoader().load(src, resolve, undefined, reject)
+          )
+          object.traverse((child: any) => {
+            if (child.isMesh) {
+              child.castShadow = true
+              child.receiveShadow = true
+            }
+          })
         } else {
           setFailed('Unsupported format')
           return

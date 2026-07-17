@@ -175,7 +175,7 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
           onClick={uploading ? undefined : handleClick}
           style={{ cursor: uploading ? 'wait' : 'pointer', marginTop: 0 }}>
           {uploading ? 'Uploading...' : 'Drop Zone (click or drag .glb/.obj/.3dm/.stl)'}
-          <input ref={fileRef} type="file" accept=".glb,.obj,.3dm,.stl" style={{ display: 'none' }} onChange={handleFileChange} />
+          <input ref={fileRef} type="file" accept=".glb,.obj,.3dm,.stl,.fbx" style={{ display: 'none' }} onChange={handleFileChange} />
         </div>
       )}
       {uploadError && <div style={{ color: '#800000', fontSize: 10 }}>{uploadError}</div>}
