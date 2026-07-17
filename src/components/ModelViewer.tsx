@@ -53,7 +53,7 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
       back.position.set(-1, -1, -1)
       scene.add(back)
 
-      const ext = src.split('.').pop()?.toLowerCase() || ''
+        const ext = src.split('.').pop()?.toLowerCase() || ''
       try {
         let object: any
         if (ext === 'glb' || ext === 'gltf') {
@@ -73,6 +73,7 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
           const geom = await new Promise<any>((resolve, reject) =>
             new STLLoader().load(src, resolve, undefined, reject)
           )
+          if (!geom.attributes.position) throw new Error('STL has no position attribute')
           geom.computeVertexNormals()
           const mat = new THREE.MeshStandardMaterial({
             color: 0x808080, metalness: 0.3, roughness: 0.4, side: THREE.DoubleSide,
@@ -101,7 +102,9 @@ export default function ModelViewer({ src, style, autoRotate = true }: Props) {
         const scale = 2 / maxDim
         object.scale.setScalar(scale)
 
-        const center = box.getCenter(new THREE.Vector3())
+        // re-compute box after scale and center
+        const box2 = new THREE.Box3().setFromObject(object)
+        const center = box2.getCenter(new THREE.Vector3())
         object.position.copy(center.clone().negate())
 
         scene.add(object)
