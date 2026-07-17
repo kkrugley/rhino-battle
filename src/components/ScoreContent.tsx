@@ -16,7 +16,6 @@ const ScoreContent = memo(function ScoreContent({ name1, count1, name2, count2 }
       borderWidth: 2, borderStyle: 'solid',
       borderColor: '#808080 #ffffff #ffffff #808080',
     }}>
-      <div style={{ fontSize: 10, letterSpacing: 2, marginBottom: 4 }}>MODELS</div>
       <div style={{ fontSize: 11, letterSpacing: 1, marginBottom: 2 }}>{name1}</div>
       <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: 4 }}>
         {count1} : {count2}
