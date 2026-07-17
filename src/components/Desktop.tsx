@@ -94,7 +94,8 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
           let content = null
           if (id === 'learner1' || id === 'learner2') {
             const models = state.models[id] || []
-            content = <LearnerContent models={models} token={state.token} onModelAdded={onModelAdded} />
+            const showDropZone = (id === 'learner1' && state.user?.id === 1) || (id === 'learner2' && state.user?.id === 2)
+            content = <LearnerContent models={models} token={state.token} onModelAdded={onModelAdded} showDropZone={showDropZone} />
           } else if (id === 'tasks') {
             content = <TasksContent tasks={state.tasks} token={state.token} onAddTask={(t) => dispatch({ type: 'ADD_TASK', task: t })} onDeleteTask={(id) => dispatch({ type: 'DELETE_TASK', taskId: id })} onReorderTasks={(tasks) => dispatch({ type: 'REORDER_TASKS', tasks })} />
           } else if (id === 'score') {

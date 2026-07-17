@@ -8,6 +8,7 @@ interface Props {
   models: ApiModel[]
   token: string | null
   onModelAdded: (model: ApiModel) => void
+  showDropZone: boolean
 }
 
 const ModelCard = memo(function ModelCard({ model }: { model: ApiModel }) {
@@ -33,7 +34,7 @@ const ModelCard = memo(function ModelCard({ model }: { model: ApiModel }) {
   )
 })
 
-const LearnerContent = memo(function LearnerContent({ models, token, onModelAdded }: Props) {
+const LearnerContent = memo(function LearnerContent({ models, token, onModelAdded, showDropZone }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
 
@@ -85,16 +86,18 @@ const LearnerContent = memo(function LearnerContent({ models, token, onModelAdde
 
   return (
     <div className="win-inset" style={{ flex: 1, padding: 8, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'auto' }}>
-      <div
-        className="win-dropzone"
-        onDrop={handleDrop}
-        onDragOver={e => e.preventDefault()}
-        onClick={uploading ? undefined : handleClick}
-        style={{ cursor: uploading ? 'wait' : 'pointer', marginTop: 0 }}
-      >
-        {uploading ? 'Uploading...' : 'Drop Zone (click or drag .glb/.obj/.3dm/.stl)'}
-        <input ref={fileRef} type="file" accept=".glb,.obj,.3dm,.stl" style={{ display: 'none' }} onChange={handleFileChange} />
-      </div>
+      {showDropZone && (
+        <div
+          className="win-dropzone"
+          onDrop={handleDrop}
+          onDragOver={e => e.preventDefault()}
+          onClick={uploading ? undefined : handleClick}
+          style={{ cursor: uploading ? 'wait' : 'pointer', marginTop: 0 }}
+        >
+          {uploading ? 'Uploading...' : 'Drop Zone (click or drag .glb/.obj/.3dm/.stl)'}
+          <input ref={fileRef} type="file" accept=".glb,.obj,.3dm,.stl" style={{ display: 'none' }} onChange={handleFileChange} />
+        </div>
+      )}
       {visible.map(m => <ModelCard key={m.id} model={m} />)}
       {hidden.length > 0 && (
         <div style={{ maxHeight: 250, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
