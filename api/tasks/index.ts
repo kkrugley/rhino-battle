@@ -9,7 +9,7 @@ async function getUser(token: string) {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET)
     return payload as { userId: number; login: string; username: string }
-  } catch { return null }
+  } catch (_e) { return null }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

@@ -9,7 +9,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const token = req.headers.authorization?.replace('Bearer ', '')
   if (!token) return res.status(401).json({ error: 'Unauthorized' })
   let user: any
-  try { user = await jwtVerify(token, JWT_SECRET) } catch { return res.status(401).json({ error: 'Invalid token' } }
+  try { user = await jwtVerify(token, JWT_SECRET) } catch (_e) { return res.status(401).json({ error: 'Invalid token' }) }
 
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 

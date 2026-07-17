@@ -8,7 +8,7 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'rhino-bat
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const token = req.headers.authorization?.replace('Bearer ', '')
   if (!token) return res.status(401).json({ error: 'Unauthorized' })
-  try { await jwtVerify(token, JWT_SECRET) } catch { return res.status(401).json({ error: 'Invalid token' } }
+  try { await jwtVerify(token, JWT_SECRET) } catch (_e) { return res.status(401).json({ error: 'Invalid token' }) }
 
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' })
 
