@@ -1,9 +1,15 @@
 import { memo, useState, useCallback, useRef } from 'react'
 import type { ApiTask } from '../types'
 import { upload } from '@vercel/blob/client'
+import ModelViewer from './ModelViewer'
 
 const API = '/api'
 const VGY_KEY = import.meta.env.VITE_VGY_USERKEY || ''
+
+function isModelUrl(url: string) {
+  const ext = url.split('.').pop()?.toLowerCase() || ''
+  return ext === 'glb' || ext === 'gltf' || ext === 'stl' || ext === 'obj' || ext === '3dm'
+}
 
 const DIFF_COLORS: Record<string, string> = {
   Easy: '#008000',
@@ -55,13 +61,8 @@ const TaskItem = memo(function TaskItem({
           </div>
         )}
         {task.main_image_url ? (
-          task.main_image_url.endsWith('.glb') ? (
-            <model-viewer
-              src={task.main_image_url}
-              style={{ width: 96, height: 96, objectFit: 'cover', border: '1px solid #000', flexShrink: 0, background: '#e5e7eb' }}
-              camera-controls auto-rotate disable-zoom shadow-intensity="1"
-              alt={task.title}
-            />
+          isModelUrl(task.main_image_url) ? (
+            <ModelViewer src={task.main_image_url} style={{ width: 96, height: 96, border: '1px solid #000', flexShrink: 0 }} />
           ) : (
             <img src={task.main_image_url} alt={task.title} loading="lazy" style={{ width: 96, height: 96, objectFit: 'cover', border: '1px solid #000', flexShrink: 0 }} />
           )
@@ -103,15 +104,12 @@ const TaskItem = memo(function TaskItem({
               <button className="win-btn-sm" onClick={() => setOpen(false)}><span style={{ fontWeight: 700, fontSize: 8 }}>x</span></button>
             </div>
             <div style={{ padding: 8, overflowY: 'auto' }}>
-              {data.main_image_url?.endsWith('.glb') ? (
-                <model-viewer
-                  src={data.main_image_url}
-                  style={{ width: '100%', height: 240, background: '#e5e7eb', borderWidth: 2, borderStyle: 'solid', borderColor: '#808080 #ffffff #ffffff #808080', marginBottom: 8 }}
-                  camera-controls auto-rotate shadow-intensity="1"
-                  alt={data.title}
-                />
-              ) : data.main_image_url ? (
-                <img src={data.main_image_url} alt={data.title} style={{ width: '100%', maxHeight: 240, objectFit: 'contain', border: '1px solid #000', marginBottom: 8 }} />
+              {data.main_image_url ? (
+                isModelUrl(data.main_image_url) ? (
+                  <ModelViewer src={data.main_image_url} style={{ width: '100%', height: 240, borderWidth: 2, borderStyle: 'solid', borderColor: '#808080 #ffffff #ffffff #808080', marginBottom: 8 }} />
+                ) : (
+                  <img src={data.main_image_url} alt={data.title} style={{ width: '100%', maxHeight: 240, objectFit: 'contain', border: '1px solid #000', marginBottom: 8 }} />
+                )
               ) : null}
               <div style={{ fontSize: 11, marginBottom: 8 }}>{data.description}</div>
               <div style={{ fontSize: 10, color: '#595a5b' }}>
@@ -271,7 +269,7 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
             {mainImage ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 {mainIsModel ? (
-                  <model-viewer src={mainImage} style={{ width: 64, height: 64, background: '#e5e7eb', border: '1px solid #000' }} camera-controls auto-rotate disable-zoom shadow-intensity="1" alt="" />
+                  <ModelViewer src={mainImage} style={{ width: 64, height: 64, border: '1px solid #000' }} />
                 ) : (
                   <img src={mainImage} alt="" style={{ width: 64, height: 64, objectFit: 'cover', border: '1px solid #000' }} />
                 )}
@@ -281,7 +279,7 @@ function AddNewModal({ onClose, token, onCreated }: { onClose: () => void; token
             ) : (
               <div>
                 <button className="win-button" style={{ height: 22, padding: '0 8px' }} onClick={() => mainFileRef.current?.click()} disabled={mainUploading}>
-                  {mainUploading ? 'Uploading...' : 'Upload Image / .glb'}
+                  {mainUploading ? 'Uploading...' : 'Upload Image / 3D Model'}
                 </button>
                 <input ref={mainFileRef} type="file" accept="image/*,.glb,.obj,.3dm,.stl" style={{ display: 'none' }} onChange={handleMainImage} />
               </div>

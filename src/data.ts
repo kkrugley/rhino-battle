@@ -5,7 +5,6 @@ export const defaultWindows: Record<string, WindowState> = {
   tasks: { id: 'tasks', minimized: false, maximized: false, zIndex: 20, x: 360, y: 48, right: null, bottom: null, width: 400, height: 500 },
   learner2: { id: 'learner2', minimized: false, maximized: false, zIndex: 9, x: null, y: 32, right: 32, bottom: null, width: 320, height: 750 },
   score: { id: 'score', minimized: false, maximized: false, zIndex: 10, x: 16, y: null, right: null, bottom: 80, width: 192, height: 0 },
-  leaderboard: { id: 'leaderboard', minimized: false, maximized: false, zIndex: 9, x: null, y: null, right: 350, bottom: 80, width: 192, height: 0 },
   profile: { id: 'profile', minimized: false, maximized: false, zIndex: 8, x: null, y: null, right: 560, bottom: 80, width: 192, height: 0 },
 }
 

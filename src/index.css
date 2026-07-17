@@ -365,5 +365,4 @@ body {
 ::-webkit-scrollbar-track { background: #c0c0c0; border: 1px solid #808080; }
 ::-webkit-scrollbar-thumb { background: #c0c0c0; border-width: 2px; border-style: solid; border-color: #ffffff #808080 #808080 #ffffff; }
 
-/* Model viewer */
-model-viewer { display: block; width: 100%; }
+

@@ -6,7 +6,6 @@ import Window from './Window'
 import LearnerContent from './LearnerContent'
 import TasksContent from './TasksContent'
 import ScoreContent from './ScoreContent'
-import LeaderboardContent from './LeaderboardContent'
 import ProfileContent from './ProfileContent'
 
 const API = '/api'
@@ -79,29 +78,29 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
 
   const w = (id: string) => state.windows[id]
 
+  const userForLearner1 = state.users.find(u => u.id === 1)
+  const userForLearner2 = state.users.find(u => u.id === 2)
+  const titleMap: Record<string, string> = {
+    learner1: userForLearner1 ? `${userForLearner1.username} (${userForLearner1.login})` : 'Learner_01.exe',
+    tasks: 'Tasks.exe',
+    learner2: userForLearner2 ? `${userForLearner2.username} (${userForLearner2.login})` : 'Learner_02.exe',
+    score: 'Match_Score.exe',
+    profile: 'User_Profile.exe',
+  }
+
   return (
     <div className="win95-desktop">
       <div style={{ flex: 1, position: 'relative', padding: 16, overflow: 'hidden' }}>
-        {['learner1', 'tasks', 'learner2', 'score', 'leaderboard', 'profile'].map(id => {
+          {['learner1', 'tasks', 'learner2', 'score', 'profile'].map(id => {
           const win = w(id)
           if (!win) return null
 
           const iconMap: Record<string, string> = {
             learner1: 'window', tasks: 'terminal', learner2: 'window',
-            score: '', leaderboard: '', profile: 'person',
+            score: '', profile: 'person',
           }
-          const userForLearner1 = state.users.find(u => u.id === 1)
-          const userForLearner2 = state.users.find(u => u.id === 2)
-          const titleMap: Record<string, string> = {
-            learner1: userForLearner1 ? `${userForLearner1.username} (${userForLearner1.login})` : 'Learner_01.exe',
-            tasks: 'Tasks.exe',
-            learner2: userForLearner2 ? `${userForLearner2.username} (${userForLearner2.login})` : 'Learner_02.exe',
-            score: 'Match_Score.exe',
-            leaderboard: 'Leaderboard.exe',
-            profile: 'User_Profile.exe',
-          }
-          const isSmall = id === 'score' || id === 'leaderboard' || id === 'profile'
-          const isInactive = id === 'learner2' || id === 'leaderboard'
+          const isSmall = id === 'score' || id === 'profile'
+          const isInactive = id === 'learner2'
 
           let content = null
           if (id === 'learner1' || id === 'learner2') {
@@ -119,9 +118,9 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
               onDeleteTask={(id) => dispatch({ type: 'DELETE_TASK', taskId: id })}
               onReorderTasks={(tasks) => dispatch({ type: 'REORDER_TASKS', tasks })} />
           } else if (id === 'score') {
-            content = <ScoreContent user1={state.score.user1} user2={state.score.user2} />
-          } else if (id === 'leaderboard') {
-            content = <LeaderboardContent entries={state.leaderboard} />
+            const name1 = state.users.find(u => u.id === 1)?.username || 'User 1'
+            const name2 = state.users.find(u => u.id === 2)?.username || 'User 2'
+            content = <ScoreContent name1={name1} count1={state.score.user1} name2={name2} count2={state.score.user2} />
           } else if (id === 'profile') {
             content = <ProfileContent
               username={state.user?.username || 'Admin'}
@@ -160,6 +159,7 @@ const Desktop = memo(function Desktop({ state, dispatch }: Props) {
         onFocus={focus}
         onRestore={restore}
         onLogout={logout}
+        titles={titleMap}
       />
 
       {!state.authenticated && (

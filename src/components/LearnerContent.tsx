@@ -1,6 +1,7 @@
 import { memo, useCallback, useRef, useState } from 'react'
 import type { ApiModel, ApiTask } from '../types'
 import { upload } from '@vercel/blob/client'
+import ModelViewer from './ModelViewer'
 
 const API = '/api'
 
@@ -16,12 +17,7 @@ const ModelCard = memo(function ModelCard({ model }: { model: ApiModel }) {
   return (
     <div className="win-card">
       {model.file_url ? (
-        <model-viewer
-          src={model.file_url}
-          style={{ width: '100%', height: 128, background: '#e5e7eb', borderWidth: 2, borderStyle: 'solid', borderColor: '#808080 #ffffff #ffffff #808080' }}
-          camera-controls auto-rotate disable-zoom shadow-intensity="1"
-          alt={model.filename}
-        />
+        <ModelViewer src={model.file_url} style={{ width: '100%', height: 128 }} />
       ) : (
         <div className="win-model" />
       )}
@@ -79,12 +75,7 @@ function AssignTaskModal({
           <button className="win-btn-sm" onClick={onClose} disabled={saving}><span style={{ fontWeight: 700, fontSize: 8 }}>x</span></button>
         </div>
         <div style={{ padding: 8, overflowY: 'auto' }}>
-          <model-viewer
-            src={fileUrl}
-            style={{ width: '100%', height: 200, background: '#e5e7eb', borderWidth: 2, borderStyle: 'solid', borderColor: '#808080 #ffffff #ffffff #808080', marginBottom: 8 }}
-            camera-controls auto-rotate shadow-intensity="1"
-            alt={filename}
-          />
+          <ModelViewer src={fileUrl} style={{ width: '100%', height: 200, borderWidth: 2, borderStyle: 'solid', borderColor: '#808080 #ffffff #ffffff #808080', marginBottom: 8 }} />
           <div style={{ fontWeight: 700, fontSize: 11, marginBottom: 6 }}>Select completed task:</div>
           {tasks.length === 0 ? (
             <div style={{ color: '#808080', fontSize: 11 }}>No tasks available</div>

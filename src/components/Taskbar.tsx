@@ -7,20 +7,17 @@ interface Props {
   onFocus: (id: string) => void
   onRestore: (id: string) => void
   onLogout: () => void
+  titles: Record<string, string>
 }
 
-const labels: Record<string, { icon: string; label: string }> = {
-  tasks: { icon: 'terminal', label: 'Tasks.exe' },
-  learner1: { icon: 'window', label: 'Learner_01.exe' },
-  learner2: { icon: 'window', label: 'Learner_02.exe' },
-  profile: { icon: 'person', label: 'User_Profile.exe' },
-  leaderboard: { icon: 'leaderboard', label: 'Leaderboard.exe' },
-  score: { icon: 'timer', label: 'Match_Score.exe' },
+const iconMap: Record<string, string> = {
+  tasks: 'terminal', learner1: 'window', learner2: 'window',
+  profile: 'person', score: 'timer',
 }
 
-const order = ['tasks', 'learner1', 'learner2', 'profile', 'leaderboard', 'score']
+const order = ['tasks', 'learner1', 'learner2', 'profile', 'score']
 
-const Taskbar = memo(function Taskbar({ windows, activeWindow, onFocus, onRestore, onLogout }: Props) {
+const Taskbar = memo(function Taskbar({ windows, activeWindow, onFocus, onRestore, onLogout, titles }: Props) {
   const [startOpen, setStartOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -68,15 +65,16 @@ const Taskbar = memo(function Taskbar({ windows, activeWindow, onFocus, onRestor
       <div className="win-sep" />
 
       {order.map(id => {
-        const info = labels[id]
-        if (!info) return null
+        const icon = iconMap[id]
+        const label = titles[id]
+        if (!label) return null
         const isActive = activeWindow === id
         const isMin = windows[id]?.minimized
         const cls = isActive || isMin ? 'win-task-btn-pressed' : 'win-task-btn'
         return (
           <button key={id} className={cls} onClick={() => handleBtn(id)}>
-            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>{info.icon}</span>
-            <span>{info.label}</span>
+            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>{icon}</span>
+            <span>{label}</span>
           </button>
         )
       })}
