@@ -171,13 +171,12 @@ const LearnerContent = memo(function LearnerContent({ models, tasks, token, onMo
     <div className="win-inset" style={{ flex: 1, padding: 8, display: 'flex', flexDirection: 'column', gap: 8, overflow: 'auto' }}>
       {showDropZone && (
         <div className="win-dropzone" onDrop={handleDrop} onDragOver={e => e.preventDefault()}
-          onClick={uploading ? undefined : handleClick}
-          style={{ cursor: uploading ? 'wait' : 'pointer' }}>
+          onClick={uploading ? undefined : handleClick}>
           {uploading ? 'Uploading...' : 'Drop Zone'}
-          <input ref={fileRef} type="file" accept=".glb,.gltf" style={{ display: 'none' }} onChange={handleFileChange} />
         </div>
       )}
       {uploadError && <div style={{ color: '#800000', fontSize: 10 }}>{uploadError}</div>}
+      <input ref={fileRef} type="file" accept=".glb,.gltf" style={{ display: 'none' }} onChange={handleFileChange} />
       {visible.map(m => <ModelCard key={m.id} model={m} />)}
       {hidden.length > 0 && (
         <div style={{ maxHeight: 250, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>

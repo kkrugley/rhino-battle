@@ -281,6 +281,7 @@ body {
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 11px; color: #808080;
   margin-top: 8px;
+  cursor: pointer;
 }
 
 /* Model placeholder / viewer */
